@@ -1,3 +1,4 @@
+#test
 # czyta zbiór testowy z folderu na podstawie folderów tworzy sobie klasy
 # wycina cyfry z nazw folderów /klas/, opcjonalnie może też wyciąć reszte słów poza pierwszym /większa generalizacja, uogólnienie klas/
 # wyznaczanie lbp z obrazów
