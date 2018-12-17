@@ -26,6 +26,9 @@ from skimage import feature
 from sklearn.model_selection import train_test_split
 import tensorflow as tf
 
+# Krzywa ROC
+from sklearn.metrics import roc_curve, auc, confusion_matrix
+
 TRAINING_PATH = "./fruits/fruits-360/Training/"
 TEST_PATH = "./fruits/fruits-360/Test/"
 
@@ -36,10 +39,10 @@ NUM_OF_POINTS = 24
 RADIUS = 8
 NUM_OF_INPUTS = NUM_OF_POINTS + 2
 MULTIPLY_NUM_OF_NEURONS = 4
-NUM_OF_EPOCH = 400
+NUM_OF_EPOCH = 50
 BATH_SIZE = 100
 
-HIDDEN_LAYERS = 5
+HIDDEN_LAYERS = 1
 HIDDEN_LAYERS_WITHOUT_FIRST = HIDDEN_LAYERS - 1
 
 
@@ -57,26 +60,6 @@ def multi_layer_perceptron_gesheft(number_of_class, x_teach, y_teach, x_val, y_v
     for i in range(0, hidden_layers_without_first):
         model.add(Dense(num_of_neurons))
 
-    # num_of_neurons *= MULTIPLY_NUM_OF_NEURONS
-    # add how many layers you want
-    # model.add(Dense(num_of_neurons,  init='uniform', activation='relu'))
-    # model.add(Dense(num_of_neurons))
-    #
-    # # num_of_neurons *= MULTIPLY_NUM_OF_NEURONS
-    # # model.add(Dense(num_of_neurons))
-    # # num_of_neurons *= MULTIPLY_NUM_OF_NEURONS
-    # # model.add(Dense(num_of_neurons))
-    # # num_of_neurons *= MULTIPLY_NUM_OF_NEURONS
-    # # model.add(Dense(num_of_neurons))
-    #
-    # # num_of_neurons *= MULTIPLY_NUM_OF_NEURONS
-    # model.add(Dense(num_of_neurons))
-    # # num_of_neurons *= MULTIPLY_NUM_OF_NEURONS
-    # model.add(Dense(num_of_neurons))
-    # # num_of_neurons *= MULTIPLY_NUM_OF_NEURONS
-    # model.add(Dense(num_of_neurons))
-    # model.add(Dense(num_of_neurons))
-    # model.add(Dense(num_of_neurons))
     # last layer
     model.add(Dense(number_of_class, activation='softmax'))
 
@@ -92,7 +75,7 @@ def multi_layer_perceptron_gesheft(number_of_class, x_teach, y_teach, x_val, y_v
     # show_summary_of_model(model, results)
     # save_summary_of_model(model, results, hidden_layers_without_first + 1)
 
-    return results
+    return results, model
 
 
 def show_summary_of_model(model, results):
@@ -166,8 +149,6 @@ def show_summary_of_model_all(results, data, append):
     plt.gcf().clear()
 
 
-
-
 def save_summary_of_model(model, results, hiddend_layers):
     print("aaaaa")
     print(model.summary())
@@ -239,9 +220,9 @@ def read_samples(path):
             x.append(lbp)
             y.append(label)
             # read only x image from folder
-            if count == 10:
-                break
-            count += 1
+            # if count == 10:
+            #     break
+            # count += 1
     return x, y
 
 
@@ -335,18 +316,19 @@ def main_processing_function():
     if not check_numpy_set_exist("teach"):
         create_numpy_set(TRAINING_PATH, "teach")
     x_teach, y_teach = load_numpy_set("teach")
-    if not check_numpy_set_exist("val"):
-        create_numpy_set(TEST_PATH, "val")
-    x_val_temp, y_val_temp = load_numpy_set("val")
+    if not check_numpy_set_exist("test"):
+        create_numpy_set(TEST_PATH, "test")
+    x_test_temp, y_test_temp = load_numpy_set("test")
+    y_test_temp_copy = y_test_temp.copy()
 
     # random Split Data set to teach
     x_teach, x_val, y_teach_temp1, y_val_temp1 = train_test_split(x_teach, y_teach, test_size=0.3, random_state=42)
 
     # number of class in set
-    num_of_class = len(set(y_val_temp))
+    num_of_class = len(set(y_test_temp_copy))
 
     # make idClasses
-    id_class_dictionary = make_id_class_dictionary(y_val_temp)
+    id_class_dictionary = make_id_class_dictionary(y_test_temp_copy)
 
     # convert from wordList to numberList Of class
     y_teach_temp2 = cvt2_id_class_list(id_class_dictionary, y_teach_temp1)
@@ -356,29 +338,97 @@ def main_processing_function():
     y_val = cv2_id_class_as_vector(y_val_temp2, num_of_class)
     y_teach = cv2_id_class_as_vector(y_teach_temp2, num_of_class)
 
-    multi_layer_perceptron_gesheft(number_of_class=num_of_class,
-                                   x_teach=x_teach, y_teach=np.asarray(y_teach), x_val=x_val, y_val=np.asarray(y_val),
-                                   num_of_epoch=NUM_OF_EPOCH,
-                                   batch_size=BATH_SIZE,
-                                   hidden_layers_without_first=HIDDEN_LAYERS_WITHOUT_FIRST)
+    results, model = multi_layer_perceptron_gesheft(number_of_class=num_of_class,
+                                                    x_teach=x_teach, y_teach=np.asarray(y_teach), x_val=x_val,
+                                                    y_val=np.asarray(y_val),
+                                                    num_of_epoch=NUM_OF_EPOCH,
+                                                    batch_size=BATH_SIZE,
+                                                    hidden_layers_without_first=HIDDEN_LAYERS_WITHOUT_FIRST)
+    show_summary_of_model(model, results)
 
+    #evaluate_test
+    y_test_tmp = cvt2_id_class_list(id_class_dictionary, y_test_temp)
+    y_test = cv2_id_class_as_vector(y_test_tmp, num_of_class)
+    evaluate_test = model.evaluate(x_test_temp, np.asarray(y_test), verbose=0)
+    print("********************")
+    #Scalar test loss (if the model has a single output and no metrics) or list of scalars (if the model has multiple outputs and/or metrics).
+    # The attribute model.metrics_names will give you the display labels for the scalar outputs.
+    print(model.metrics_names)
+    print(evaluate_test)
+
+    #ROC
+    col = 'micro'
+    mi_avg_fprs = []
+    mi_avg_tprs = []
+    mi_avg_aucs = []
+
+    tmptmp = np.asarray(y_test)
+
+    y_pred = model.predict(x_test_temp)
+    fpr = dict()
+    tpr = dict()
+    roc_auc = dict()
+    for i in range(num_of_class):
+        fpr[i], tpr[i], _ = roc_curve(tmptmp[:, i], y_pred[:, i])
+        roc_auc[i] = auc(fpr[i], tpr[i])
+    # Micro-average ROC
+    fpr["micro"], tpr["micro"], _ = roc_curve(tmptmp.ravel(), y_pred.ravel())
+    # Micro-avarage Area Under Curve
+    roc_auc[col] = auc(fpr[col], tpr[col])
+
+    mi_avg_fprs.append(fpr[col])
+    mi_avg_tprs.append(tpr[col])
+    #
+    #
+    mi_avg_fprs = np.array(mi_avg_fprs)
+    mi_avg_tprs = np.array(mi_avg_tprs)
+
+
+    # plt.figure()
+    # lw = 2
+    # plt.plot(fpr[2], tpr[2], color='darkorange',
+    #          lw=lw, label='ROC curve (area = %0.2f)' % roc_auc[2])
+    # plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
+    # plt.xlim([0.0, 1.0])
+    # plt.ylim([0.0, 1.05])
+    # plt.xlabel('False Positive Rate')
+    # plt.ylabel('True Positive Rate')
+    # plt.title('Receiver operating characteristic example')
+    # plt.legend(loc="lower right")
+    # plt.show()
+
+    roc_plot(0,mi_avg_fprs,mi_avg_tprs)
+
+    # predictTestSet(model)
+
+def roc_plot(idx,mi_avg_fprs,mi_avg_tprs):
+    plt.plot(mi_avg_fprs[idx], mi_avg_tprs[idx], color='darkorange',
+             lw=2)
+    plt.title("pppppppp")
+    plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('FPr')
+    plt.ylabel('TPr')
+    plt.show()
 
 def multiplyLayersTest():
     if not check_numpy_set_exist("teach"):
         create_numpy_set(TRAINING_PATH, "teach")
     x_teach, y_teach = load_numpy_set("teach")
-    if not check_numpy_set_exist("val"):
-        create_numpy_set(TEST_PATH, "val")
-    x_val_temp, y_val_temp = load_numpy_set("val")
+    if not check_numpy_set_exist("test"):
+        create_numpy_set(TEST_PATH, "test")
+    x_test_temp, y_test_temp = load_numpy_set("test")
+    y_test_temp_copy = y_test_temp.copy()
 
     # random Split Data set to teach
     x_teach, x_val, y_teach_temp1, y_val_temp1 = train_test_split(x_teach, y_teach, test_size=0.3, random_state=42)
 
     # number of class in set
-    num_of_class = len(set(y_val_temp))
+    num_of_class = len(set(y_test_temp_copy))
 
     # make idClasses
-    id_class_dictionary = make_id_class_dictionary(y_val_temp)
+    id_class_dictionary = make_id_class_dictionary(y_test_temp_copy)
 
     # convert from wordList to numberList Of class
     y_teach_temp2 = cvt2_id_class_list(id_class_dictionary, y_teach_temp1)
@@ -389,13 +439,13 @@ def multiplyLayersTest():
     y_teach = cv2_id_class_as_vector(y_teach_temp2, num_of_class)
 
     data_for_plots = {}
-    for i in range(0, 8):
-        results = multi_layer_perceptron_gesheft(number_of_class=num_of_class,
-                                                 x_teach=x_teach, y_teach=np.asarray(y_teach), x_val=x_val,
-                                                 y_val=np.asarray(y_val),
-                                                 num_of_epoch=NUM_OF_EPOCH,
-                                                 batch_size=BATH_SIZE,
-                                                 hidden_layers_without_first=i)
+    for i in range(0, 1):
+        results, model = multi_layer_perceptron_gesheft(number_of_class=num_of_class,
+                                                        x_teach=x_teach, y_teach=np.asarray(y_teach), x_val=x_val,
+                                                        y_val=np.asarray(y_val),
+                                                        num_of_epoch=NUM_OF_EPOCH,
+                                                        batch_size=BATH_SIZE,
+                                                        hidden_layers_without_first=i)
         # plt.plot(results.history['categorical_accuracy'])
         # plt.plot(results.history['val_categorical_accuracy'])
         data_for_plots[i] = results.history
@@ -427,24 +477,25 @@ def LBPTest():
         print("RADIUS=" + str(RADIUS))
 
         removeFile("dataX-teach.npy")
-        removeFile("dataX-val.npy")
+        removeFile("dataX-test.npy")
         removeFile("dataY-teach.npy")
-        removeFile("dataY-val.npy")
+        removeFile("dataY-test.npy")
         # if not check_numpy_set_exist("teach"):
         create_numpy_set(TRAINING_PATH, "teach")
         x_teach, y_teach = load_numpy_set("teach")
-        # if not check_numpy_set_exist("val"):
-        create_numpy_set(TEST_PATH, "val")
-        x_val_temp, y_val_temp = load_numpy_set("val")
+        # if not check_numpy_set_exist("test"):
+        create_numpy_set(TEST_PATH, "test")
+        x_test_temp, y_test_temp = load_numpy_set("test")
+        y_test_temp_copy = y_test_temp.copy()
 
         # random Split Data set to teach
         x_teach, x_val, y_teach_temp1, y_val_temp1 = train_test_split(x_teach, y_teach, test_size=0.3, random_state=42)
 
         # number of class in set
-        num_of_class = len(set(y_val_temp))
+        num_of_class = len(set(y_test_temp_copy))
 
         # make idClasses
-        id_class_dictionary = make_id_class_dictionary(y_val_temp)
+        id_class_dictionary = make_id_class_dictionary(y_test_temp_copy)
 
         # convert from wordList to numberList Of class
         y_teach_temp2 = cvt2_id_class_list(id_class_dictionary, y_teach_temp1)
@@ -455,12 +506,12 @@ def LBPTest():
         y_teach = cv2_id_class_as_vector(y_teach_temp2, num_of_class)
 
         # for i in range(0, 8):
-        results = multi_layer_perceptron_gesheft(number_of_class=num_of_class,
-                                                 x_teach=x_teach, y_teach=np.asarray(y_teach), x_val=x_val,
-                                                 y_val=np.asarray(y_val),
-                                                 num_of_epoch=NUM_OF_EPOCH,
-                                                 batch_size=BATH_SIZE,
-                                                 hidden_layers_without_first=HIDDEN_LAYERS_WITHOUT_FIRST)
+        results, model = multi_layer_perceptron_gesheft(number_of_class=num_of_class,
+                                                        x_teach=x_teach, y_teach=np.asarray(y_teach), x_val=x_val,
+                                                        y_val=np.asarray(y_val),
+                                                        num_of_epoch=NUM_OF_EPOCH,
+                                                        batch_size=BATH_SIZE,
+                                                        hidden_layers_without_first=HIDDEN_LAYERS_WITHOUT_FIRST)
         # plt.plot(results.history['categorical_accuracy'])
         # plt.plot(results.history['val_categorical_accuracy'])
         data_for_plots[i] = results.history
@@ -468,10 +519,14 @@ def LBPTest():
     print("aaaa")
 
 
+def predictTestSet(model):
+    model.evaluate()
+
+
 def main():
-    # main_processing_function()
+    main_processing_function()
     # multiplyLayersTest()
-    LBPTest()
+    # LBPTest()
 
 
 if __name__ == "__main__":
