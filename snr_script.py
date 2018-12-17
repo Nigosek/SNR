@@ -1,4 +1,3 @@
-#test
 # czyta zbiór testowy z folderu na podstawie folderów tworzy sobie klasy
 # wycina cyfry z nazw folderów /klas/, opcjonalnie może też wyciąć reszte słów poza pierwszym /większa generalizacja, uogólnienie klas/
 # wyznaczanie lbp z obrazów
@@ -25,6 +24,7 @@ from keras.layers import Dense
 from keras.models import Sequential
 from skimage import feature
 from sklearn.model_selection import train_test_split
+import tensorflow as tf
 
 TRAINING_PATH = "./fruits/fruits-360/Training/"
 TEST_PATH = "./fruits/fruits-360/Test/"
@@ -35,29 +35,48 @@ TEST_PATH = "./fruits/fruits-360/Test/"
 NUM_OF_POINTS = 24
 RADIUS = 8
 NUM_OF_INPUTS = NUM_OF_POINTS + 2
-MULTIPLY_NUM_OF_NEURONS = 2
-NUM_OF_EPOCH = 100
+MULTIPLY_NUM_OF_NEURONS = 4
+NUM_OF_EPOCH = 400
 BATH_SIZE = 100
 
+HIDDEN_LAYERS = 5
+HIDDEN_LAYERS_WITHOUT_FIRST = HIDDEN_LAYERS - 1
 
-def multi_layer_perceptron_gesheft(number_of_class, x_teach, y_teach, x_val, y_val, num_of_epoch, batch_size):
+
+def multi_layer_perceptron_gesheft(number_of_class, x_teach, y_teach, x_val, y_val, num_of_epoch, batch_size,
+                                   hidden_layers_without_first):
     model = Sequential()
     # first layer
     num_of_neurons = NUM_OF_INPUTS * MULTIPLY_NUM_OF_NEURONS
-    model.add(Dense(num_of_neurons, input_shape=(NUM_OF_INPUTS,)))
-    num_of_neurons *= MULTIPLY_NUM_OF_NEURONS
 
+    # pierwsza warstwa
+    model.add(Dense(num_of_neurons, input_shape=(NUM_OF_INPUTS,)))
+
+    # model.add(Dense(num_of_neurons, input_shape=(NUM_OF_INPUTS,)))
+
+    for i in range(0, hidden_layers_without_first):
+        model.add(Dense(num_of_neurons))
+
+    # num_of_neurons *= MULTIPLY_NUM_OF_NEURONS
     # add how many layers you want
     # model.add(Dense(num_of_neurons,  init='uniform', activation='relu'))
-    model.add(Dense(num_of_neurons))
-
-    num_of_neurons *= MULTIPLY_NUM_OF_NEURONS
-    model.add(Dense(num_of_neurons))
-    num_of_neurons *= MULTIPLY_NUM_OF_NEURONS
-    model.add(Dense(num_of_neurons))
-    num_of_neurons *= MULTIPLY_NUM_OF_NEURONS
-    model.add(Dense(num_of_neurons))
-
+    # model.add(Dense(num_of_neurons))
+    #
+    # # num_of_neurons *= MULTIPLY_NUM_OF_NEURONS
+    # # model.add(Dense(num_of_neurons))
+    # # num_of_neurons *= MULTIPLY_NUM_OF_NEURONS
+    # # model.add(Dense(num_of_neurons))
+    # # num_of_neurons *= MULTIPLY_NUM_OF_NEURONS
+    # # model.add(Dense(num_of_neurons))
+    #
+    # # num_of_neurons *= MULTIPLY_NUM_OF_NEURONS
+    # model.add(Dense(num_of_neurons))
+    # # num_of_neurons *= MULTIPLY_NUM_OF_NEURONS
+    # model.add(Dense(num_of_neurons))
+    # # num_of_neurons *= MULTIPLY_NUM_OF_NEURONS
+    # model.add(Dense(num_of_neurons))
+    # model.add(Dense(num_of_neurons))
+    # model.add(Dense(num_of_neurons))
     # last layer
     model.add(Dense(number_of_class, activation='softmax'))
 
@@ -70,28 +89,119 @@ def multi_layer_perceptron_gesheft(number_of_class, x_teach, y_teach, x_val, y_v
     results = model.fit(x_teach, y_teach, epochs=num_of_epoch, batch_size=batch_size, validation_data=(x_val, y_val),
                         verbose=1)
 
-    show_summary_of_model(model, results)
+    # show_summary_of_model(model, results)
+    # save_summary_of_model(model, results, hidden_layers_without_first + 1)
+
+    return results
 
 
 def show_summary_of_model(model, results):
+    print("aaaaa")
     print(model.summary())
+    print("bbbbb")
     print(results.history.keys())
     # summarize history for accuracy
     plt.plot(results.history['categorical_accuracy'])
     plt.plot(results.history['val_categorical_accuracy'])
-    plt.title('model accuracy')
+    plt.title('model accuracy epoch=' + str(NUM_OF_EPOCH) + ' layers=' + str(HIDDEN_LAYERS))
     plt.ylabel('categorical_accuracy')
     plt.xlabel('epoch')
-    plt.legend(['train', 'test'], loc='upper left')
+    plt.legend(['train', 'validation'], loc='upper left')
     plt.show()
+
     # summarize history for loss
     plt.plot(results.history['loss'])
     plt.plot(results.history['val_loss'])
-    plt.title('model loss')
+    plt.title('model loss epoch=' + str(NUM_OF_EPOCH) + ' layers=' + str(HIDDEN_LAYERS))
     plt.ylabel('loss')
     plt.xlabel('epoch')
-    plt.legend(['train', 'test'], loc='upper left')
+    plt.legend(['train', 'validation'], loc='upper left')
     plt.show()
+
+
+def show_summary_of_model_all(results, data, append):
+    directory = "./images/"
+
+    legend = []
+    for x in data:
+        # legend.append(x)
+        trainingData = data[x].get('categorical_accuracy')
+        valiadationData = data[x].get('val_categorical_accuracy')
+        tmp, = plt.plot(trainingData, linewidth=0.3, label=str(x) + '-trening')
+        tmp2, = plt.plot(valiadationData, linewidth=0.3, label=str(x) + '-validation')
+        legend.append(tmp)
+        legend.append(tmp2)
+        # plt.plot(valiadationData, linewidth=0.7)
+
+        print(x)
+    plt.ylabel('categorical_accuracy')
+    plt.xlabel('epoch')
+    plt.legend(handles=legend)
+    # plt.legend(legend, loc='upper left')
+    # plt.show()
+    plt.savefig(directory + append + '_model_accuracy_epoch_img', format='eps', dpi=1000)
+
+    plt.gcf().clear()
+
+    legend = []
+    for x in data:
+        # legend.append(x)
+        trainingData = data[x].get('loss')
+        valiadationData = data[x].get('val_loss')
+        tmp, = plt.plot(trainingData, linewidth=0.3, label=str(x) + '-trening')
+        tmp2, = plt.plot(valiadationData, linewidth=0.3, label=str(x) + '-validation')
+        legend.append(tmp)
+        legend.append(tmp2)
+        # plt.plot(valiadationData, linewidth=0.7)
+
+        print(x)
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.legend(handles=legend)
+    # plt.legend(legend, loc='upper left')
+    # plt.show()
+    plt.savefig(directory + append + '_model_loss_epoch_img', format='eps', dpi=1000)
+    plt.gcf().clear()
+
+    plt.gcf().clear()
+
+
+
+
+def save_summary_of_model(model, results, hiddend_layers):
+    print("aaaaa")
+    print(model.summary())
+    print("bbbbb")
+    print(results.history.keys())
+    dir = "./images/"
+    # summarize history for accuracy
+    # temp = results.history['categorical_accuracy']
+    # temp += results.history['categorical_accuracy']
+
+    plt.plot(results.history['categorical_accuracy'])
+    plt.plot(results.history['val_categorical_accuracy'])
+    plt.title('model accuracy epoch=' + str(NUM_OF_EPOCH) + ' layers=' + str(hiddend_layers))
+    plt.ylabel('categorical_accuracy')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'validation'], loc='upper left')
+    # plt.show()
+    # save image to file
+    plt.savefig(
+        dir + 'model_accuracy_epoch/' 'model_accuracy_epoch=' + str(NUM_OF_EPOCH) + ';layers=' + str(hiddend_layers))
+    plt.gcf().clear()
+
+    # summarize history for loss
+    plt.plot(results.history['loss'])
+    plt.plot(results.history['val_loss'])
+    plt.title('model loss epoch=' + str(NUM_OF_EPOCH) + ' layers=' + str(hiddend_layers))
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'validation'], loc='upper left')
+    # plt.show()
+
+    # save image to file
+    plt.savefig(dir + 'model_loss_epoch/' + 'model_loss_epoch=' + str(NUM_OF_EPOCH) + ';layers=' + str(hiddend_layers))
+    plt.gcf().clear()
 
 
 def read_samples(path):
@@ -104,6 +214,11 @@ def read_samples(path):
     dirpath = os.getcwd()
     # read subfolders
     subfolders = os.listdir(path)
+
+    print("*************************")
+    print("read_samples:")
+    print("NUM_OF_POINTS=" + str(NUM_OF_POINTS))
+    print("RADIUS=" + str(RADIUS))
 
     # delete numbers from string
     # result = ''.join(i for i in s if not i.isdigit())
@@ -151,12 +266,17 @@ def compute_lbp(image_path, image_name):
 
 def create_numpy_set(path, name):
     histogram, labels = read_samples(path)
-    np.save("dataHistogram-" + name + ".npy", histogram)
-    np.save("dataLabels-" + name + ".npy", labels)
+    # np.save("dataHistogram-" + name + ".npy", histogram)
+    # np.save("dataLabels-" + name + ".npy", labels)
+    np.save("dataX-" + name + ".npy", histogram)
+    np.save("dataY-" + name + ".npy", labels)
 
 
 def check_numpy_set_exist(name):
-    if os.path.isfile("dataHistogram-" + name + ".npy") and os.path.isfile("dataLabels-" + name + ".npy"):
+    # if os.path.isfile("dataHistogram-" + name + ".npy") and os.path.isfile("dataLabels-" + name + ".npy"):
+    #     return True
+    # return False
+    if os.path.isfile("dataX-" + name + ".npy") and os.path.isfile("dataY-" + name + ".npy"):
         return True
     return False
 
@@ -239,11 +359,119 @@ def main_processing_function():
     multi_layer_perceptron_gesheft(number_of_class=num_of_class,
                                    x_teach=x_teach, y_teach=np.asarray(y_teach), x_val=x_val, y_val=np.asarray(y_val),
                                    num_of_epoch=NUM_OF_EPOCH,
-                                   batch_size=BATH_SIZE)
+                                   batch_size=BATH_SIZE,
+                                   hidden_layers_without_first=HIDDEN_LAYERS_WITHOUT_FIRST)
+
+
+def multiplyLayersTest():
+    if not check_numpy_set_exist("teach"):
+        create_numpy_set(TRAINING_PATH, "teach")
+    x_teach, y_teach = load_numpy_set("teach")
+    if not check_numpy_set_exist("val"):
+        create_numpy_set(TEST_PATH, "val")
+    x_val_temp, y_val_temp = load_numpy_set("val")
+
+    # random Split Data set to teach
+    x_teach, x_val, y_teach_temp1, y_val_temp1 = train_test_split(x_teach, y_teach, test_size=0.3, random_state=42)
+
+    # number of class in set
+    num_of_class = len(set(y_val_temp))
+
+    # make idClasses
+    id_class_dictionary = make_id_class_dictionary(y_val_temp)
+
+    # convert from wordList to numberList Of class
+    y_teach_temp2 = cvt2_id_class_list(id_class_dictionary, y_teach_temp1)
+    y_val_temp2 = cvt2_id_class_list(id_class_dictionary, y_val_temp1)
+
+    # get final representation of labels as vector ex. [0 0 0 0 ..... 0 1 0 0 0] - outputs of network
+    y_val = cv2_id_class_as_vector(y_val_temp2, num_of_class)
+    y_teach = cv2_id_class_as_vector(y_teach_temp2, num_of_class)
+
+    data_for_plots = {}
+    for i in range(0, 8):
+        results = multi_layer_perceptron_gesheft(number_of_class=num_of_class,
+                                                 x_teach=x_teach, y_teach=np.asarray(y_teach), x_val=x_val,
+                                                 y_val=np.asarray(y_val),
+                                                 num_of_epoch=NUM_OF_EPOCH,
+                                                 batch_size=BATH_SIZE,
+                                                 hidden_layers_without_first=i)
+        # plt.plot(results.history['categorical_accuracy'])
+        # plt.plot(results.history['val_categorical_accuracy'])
+        data_for_plots[i] = results.history
+    show_summary_of_model_all(results, data_for_plots, '')
+    print("aaaa")
+
+
+def removeFile(name):
+    if os.path.exists(name):
+        os.remove(name)
+    else:
+        print("The file does not exist")
+
+
+def LBPTest():
+    # changing NUM_OF_POINTS and RADIUS value
+    global NUM_OF_POINTS
+    global RADIUS
+    global NUM_OF_INPUTS
+    data_for_plots = {}
+
+    for i in range(4, 32, 2):
+        NUM_OF_POINTS = i
+        RADIUS = 8
+        NUM_OF_INPUTS = NUM_OF_POINTS + 2
+        print("****************************")
+        print("LBPTest")
+        print("NUM_OF_POINTS=" + str(NUM_OF_POINTS))
+        print("RADIUS=" + str(RADIUS))
+
+        removeFile("dataX-teach.npy")
+        removeFile("dataX-val.npy")
+        removeFile("dataY-teach.npy")
+        removeFile("dataY-val.npy")
+        # if not check_numpy_set_exist("teach"):
+        create_numpy_set(TRAINING_PATH, "teach")
+        x_teach, y_teach = load_numpy_set("teach")
+        # if not check_numpy_set_exist("val"):
+        create_numpy_set(TEST_PATH, "val")
+        x_val_temp, y_val_temp = load_numpy_set("val")
+
+        # random Split Data set to teach
+        x_teach, x_val, y_teach_temp1, y_val_temp1 = train_test_split(x_teach, y_teach, test_size=0.3, random_state=42)
+
+        # number of class in set
+        num_of_class = len(set(y_val_temp))
+
+        # make idClasses
+        id_class_dictionary = make_id_class_dictionary(y_val_temp)
+
+        # convert from wordList to numberList Of class
+        y_teach_temp2 = cvt2_id_class_list(id_class_dictionary, y_teach_temp1)
+        y_val_temp2 = cvt2_id_class_list(id_class_dictionary, y_val_temp1)
+
+        # get final representation of labels as vector ex. [0 0 0 0 ..... 0 1 0 0 0] - outputs of network
+        y_val = cv2_id_class_as_vector(y_val_temp2, num_of_class)
+        y_teach = cv2_id_class_as_vector(y_teach_temp2, num_of_class)
+
+        # for i in range(0, 8):
+        results = multi_layer_perceptron_gesheft(number_of_class=num_of_class,
+                                                 x_teach=x_teach, y_teach=np.asarray(y_teach), x_val=x_val,
+                                                 y_val=np.asarray(y_val),
+                                                 num_of_epoch=NUM_OF_EPOCH,
+                                                 batch_size=BATH_SIZE,
+                                                 hidden_layers_without_first=HIDDEN_LAYERS_WITHOUT_FIRST)
+        # plt.plot(results.history['categorical_accuracy'])
+        # plt.plot(results.history['val_categorical_accuracy'])
+        data_for_plots[i] = results.history
+    show_summary_of_model_all(results, data_for_plots, 'NUM_OF_POINTS')
+    print("aaaa")
 
 
 def main():
-    main_processing_function()
+    # main_processing_function()
+    # multiplyLayersTest()
+    LBPTest()
 
 
 if __name__ == "__main__":
