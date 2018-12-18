@@ -90,8 +90,8 @@ def show_summary_of_model(model, results):
     plt.ylabel('categorical_accuracy')
     plt.xlabel('epoch')
     plt.legend(['train', 'validation'], loc='upper left')
-    plt.show()
-
+    # plt.show()
+    plt.gcf().clear()
     # summarize history for loss
     plt.plot(results.history['loss'])
     plt.plot(results.history['val_loss'])
@@ -99,7 +99,8 @@ def show_summary_of_model(model, results):
     plt.ylabel('loss')
     plt.xlabel('epoch')
     plt.legend(['train', 'validation'], loc='upper left')
-    plt.show()
+    # plt.show()
+    plt.gcf().clear()
 
 
 def show_summary_of_model_all(results, data, append):
@@ -346,73 +347,68 @@ def main_processing_function():
                                                     hidden_layers_without_first=HIDDEN_LAYERS_WITHOUT_FIRST)
     show_summary_of_model(model, results)
 
-    #evaluate_test
+    # evaluate_test
     y_test_tmp = cvt2_id_class_list(id_class_dictionary, y_test_temp)
     y_test = cv2_id_class_as_vector(y_test_tmp, num_of_class)
     evaluate_test = model.evaluate(x_test_temp, np.asarray(y_test), verbose=0)
     print("********************")
-    #Scalar test loss (if the model has a single output and no metrics) or list of scalars (if the model has multiple outputs and/or metrics).
+    # Scalar test loss (if the model has a single output and no metrics) or list of scalars (if the model has multiple outputs and/or metrics).
     # The attribute model.metrics_names will give you the display labels for the scalar outputs.
     print(model.metrics_names)
     print(evaluate_test)
 
-    #ROC
+    # ROC
     col = 'micro'
     mi_avg_fprs = []
     mi_avg_tprs = []
-    mi_avg_aucs = []
+    # mi_avg_aucs = []
 
-    tmptmp = np.asarray(y_test)
+    y_test_array = np.asarray(y_test)
 
-    y_pred = model.predict(x_test_temp)
-    fpr = dict()
-    tpr = dict()
-    roc_auc = dict()
-    for i in range(num_of_class):
-        fpr[i], tpr[i], _ = roc_curve(tmptmp[:, i], y_pred[:, i])
-        roc_auc[i] = auc(fpr[i], tpr[i])
-    # Micro-average ROC
-    fpr["micro"], tpr["micro"], _ = roc_curve(tmptmp.ravel(), y_pred.ravel())
-    # Micro-avarage Area Under Curve
-    roc_auc[col] = auc(fpr[col], tpr[col])
-
-    mi_avg_fprs.append(fpr[col])
-    mi_avg_tprs.append(tpr[col])
-    #
-    #
+    models = [model]
+    roc_plot_data(models, x_test_temp, y_test_array, num_of_class, mi_avg_fprs, mi_avg_tprs)
     mi_avg_fprs = np.array(mi_avg_fprs)
     mi_avg_tprs = np.array(mi_avg_tprs)
 
+    for idx in range(0, 4):
+        plt.subplot(4 / 2, 4 / 2, idx + 1)
+        roc_plot(0, mi_avg_fprs, mi_avg_tprs)
+    plt.tight_layout(h_pad=1.0, w_pad=1.0)
+    plt.show()
 
-    # plt.figure()
-    # lw = 2
-    # plt.plot(fpr[2], tpr[2], color='darkorange',
-    #          lw=lw, label='ROC curve (area = %0.2f)' % roc_auc[2])
-    # plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
-    # plt.xlim([0.0, 1.0])
-    # plt.ylim([0.0, 1.05])
-    # plt.xlabel('False Positive Rate')
-    # plt.ylabel('True Positive Rate')
-    # plt.title('Receiver operating characteristic example')
-    # plt.legend(loc="lower right")
-    # plt.show()
 
-    roc_plot(0,mi_avg_fprs,mi_avg_tprs)
+def roc_plot_data(models, x_test_temp, y_test_array, num_of_class, mi_avg_fprs, mi_avg_tprs):
+    for model in models:
+        col = 'micro'
+        y_pred = model.predict(x_test_temp)
+        fpr = dict()
+        tpr = dict()
+        roc_auc = dict()
+        for i in range(num_of_class):
+            fpr[i], tpr[i], _ = roc_curve(y_test_array[:, i], y_pred[:, i])
+            roc_auc[i] = auc(fpr[i], tpr[i])
+        # Micro-average ROC
+        fpr["micro"], tpr["micro"], _ = roc_curve(y_test_array.ravel(), y_pred.ravel())
+        # Micro-avarage Area Under Curve
+        roc_auc[col] = auc(fpr[col], tpr[col])
 
-    # predictTestSet(model)
+        mi_avg_fprs.append(fpr[col])
+        mi_avg_tprs.append(tpr[col])
 
-def roc_plot(idx,mi_avg_fprs,mi_avg_tprs):
+
+def roc_plot(idx, mi_avg_fprs, mi_avg_tprs):
     plt.plot(mi_avg_fprs[idx], mi_avg_tprs[idx], color='darkorange',
              lw=2)
-    plt.title("pppppppp")
+    plt.title(str(idx))
     plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
     plt.xlim([0.0, 1.0])
     plt.ylim([0.0, 1.05])
     plt.xlabel('FPr')
     plt.ylabel('TPr')
-    plt.show()
+    # plt.show()
 
-def multiplyLayersTest():
+
+def multiplyLayersTest(number_of_layers=10):
     if not check_numpy_set_exist("teach"):
         create_numpy_set(TRAINING_PATH, "teach")
     x_teach, y_teach = load_numpy_set("teach")
@@ -439,7 +435,11 @@ def multiplyLayersTest():
     y_teach = cv2_id_class_as_vector(y_teach_temp2, num_of_class)
 
     data_for_plots = {}
-    for i in range(0, 1):
+    models = []
+    # liczba iteracji = liczba warstw do zbadania
+    number_of_iterations = number_of_layers
+    plt.figure(figsize=(10, 10))
+    for i in range(0, number_of_iterations):
         results, model = multi_layer_perceptron_gesheft(number_of_class=num_of_class,
                                                         x_teach=x_teach, y_teach=np.asarray(y_teach), x_val=x_val,
                                                         y_val=np.asarray(y_val),
@@ -449,7 +449,55 @@ def multiplyLayersTest():
         # plt.plot(results.history['categorical_accuracy'])
         # plt.plot(results.history['val_categorical_accuracy'])
         data_for_plots[i] = results.history
-    show_summary_of_model_all(results, data_for_plots, '')
+        # show_summary_of_model_all(results, data_for_plots, '')
+
+        # evaluate_test
+        y_test_tmp = cvt2_id_class_list(id_class_dictionary, y_test_temp)
+        y_test = cv2_id_class_as_vector(y_test_tmp, num_of_class)
+        evaluate_test = model.evaluate(x_test_temp, np.asarray(y_test), verbose=0)
+        print("********************")
+        # Scalar test loss (if the model has a single output and no metrics) or list of scalars (if the model has multiple outputs and/or metrics).
+        # The attribute model.metrics_names will give you the display labels for the scalar outputs.
+        print(model.metrics_names)
+        print(evaluate_test)
+
+        # ROC
+        col = 'micro'
+        mi_avg_fprs = []
+        mi_avg_tprs = []
+        # mi_avg_aucs = []
+
+        y_test_array = np.asarray(y_test)
+
+        models.append(model)
+        roc_plot_data(models, x_test_temp, y_test_array, num_of_class, mi_avg_fprs, mi_avg_tprs)
+        mi_avg_fprs = np.array(mi_avg_fprs)
+        mi_avg_tprs = np.array(mi_avg_tprs)
+
+    # wykresy dla ROC, dla 6 wyk -> 2x3, dla 9 -> 3x3, więcej rand
+    for idx in range(0, number_of_iterations):
+        # if(number_of_iterations%2)
+        if number_of_iterations % 2 == 0:
+            tmp = number_of_iterations / 2
+        else:
+            tmp = number_of_iterations / 2 + 1
+        if number_of_iterations == 1:
+            plt.subplot(1, 1, idx + 1)
+        elif number_of_iterations <= 6:
+            plt.subplot(2, tmp, idx + 1)
+        elif number_of_iterations <= 9:
+            plt.subplot(3, 3, idx + 1)
+        else:
+            plt.subplot(3, tmp, idx + 1)
+        # plt.subplot(idx + 1)
+
+        roc_plot(idx, mi_avg_fprs, mi_avg_tprs)
+    plt.tight_layout(h_pad=1.0, w_pad=1.0)
+    plt.show()
+    plt.gcf().clear()
+
+    show_summary_of_model_all(results, data_for_plots, 'NUM_OF_LAYERS')
+
     print("aaaa")
 
 
@@ -519,13 +567,9 @@ def LBPTest():
     print("aaaa")
 
 
-def predictTestSet(model):
-    model.evaluate()
-
-
 def main():
-    main_processing_function()
-    # multiplyLayersTest()
+    # main_processing_function()
+    multiplyLayersTest()
     # LBPTest()
 
 
