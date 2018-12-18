@@ -24,7 +24,10 @@ from keras.layers import Dense
 from keras.models import Sequential
 from skimage import feature
 from sklearn.model_selection import train_test_split
+from keras import backend as K
 import tensorflow as tf
+
+
 
 # Krzywa ROC
 from sklearn.metrics import roc_curve, auc, confusion_matrix
@@ -64,7 +67,7 @@ def multi_layer_perceptron_gesheft(number_of_class, x_teach, y_teach, x_val, y_v
     model.add(Dense(number_of_class, activation='softmax'))
 
     # compile model: category classifier /many categories/, for Adam optimiser /Pacut approve/, category accuracy
-    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['categorical_accuracy'])
+    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['categorical_accuracy','top_k_categorical_accuracy'])
 
     # Epochs (nb_epoch) is the number of times that the model is exposed to the training dataset.
     # Batch Size (batch_size) is the number of training instances shown to the model before a weight update is performed.
@@ -74,7 +77,7 @@ def multi_layer_perceptron_gesheft(number_of_class, x_teach, y_teach, x_val, y_v
 
     # show_summary_of_model(model, results)
     # save_summary_of_model(model, results, hidden_layers_without_first + 1)
-
+    # K.get_session().run(tf.nn.t)
     return results, model
 
 
@@ -111,9 +114,29 @@ def show_summary_of_model_all(results, data, append):
         # legend.append(x)
         trainingData = data[x].get('categorical_accuracy')
         valiadationData = data[x].get('val_categorical_accuracy')
-        tmp, = plt.plot(trainingData, linewidth=0.3, label=str(x) + '-trening')
-        tmp2, = plt.plot(valiadationData, linewidth=0.3, label=str(x) + '-validation')
+        tmp, = plt.plot(trainingData, linewidth=0.3, label=str(x) + '-training')
+        # tmp2, = plt.plot(valiadationData, linewidth=0.3, label=str(x) + '-validation')
         legend.append(tmp)
+        # legend.append(tmp2)
+        # plt.plot(valiadationData, linewidth=0.7)
+
+        print(x)
+    plt.ylabel('categorical_accuracy')
+    plt.xlabel('epoch')
+    plt.legend(handles=legend)
+    # plt.legend(legend, loc='upper left')
+    # plt.show()
+    plt.savefig(directory + append + '_model_accuracy_epoch_img_training', format='eps', dpi=1000)
+    plt.gcf().clear()
+
+    legend = []
+    for x in data:
+        # legend.append(x)
+        trainingData = data[x].get('categorical_accuracy')
+        valiadationData = data[x].get('val_categorical_accuracy')
+        # tmp, = plt.plot(trainingData, linewidth=0.3, label=str(x) + '-training')
+        tmp2, = plt.plot(valiadationData, linewidth=0.3, label=str(x) + '-validation')
+        # legend.append(tmp)
         legend.append(tmp2)
         # plt.plot(valiadationData, linewidth=0.7)
 
@@ -123,8 +146,7 @@ def show_summary_of_model_all(results, data, append):
     plt.legend(handles=legend)
     # plt.legend(legend, loc='upper left')
     # plt.show()
-    plt.savefig(directory + append + '_model_accuracy_epoch_img', format='eps', dpi=1000)
-
+    plt.savefig(directory + append + '_model_accuracy_epoch_img_validation', format='eps', dpi=1000)
     plt.gcf().clear()
 
     legend = []
@@ -132,9 +154,29 @@ def show_summary_of_model_all(results, data, append):
         # legend.append(x)
         trainingData = data[x].get('loss')
         valiadationData = data[x].get('val_loss')
-        tmp, = plt.plot(trainingData, linewidth=0.3, label=str(x) + '-trening')
-        tmp2, = plt.plot(valiadationData, linewidth=0.3, label=str(x) + '-validation')
+        tmp, = plt.plot(trainingData, linewidth=0.3, label=str(x) + '-training')
+        # tmp2, = plt.plot(valiadationData, linewidth=0.3, label=str(x) + '-validation')
         legend.append(tmp)
+        # legend.append(tmp2)
+        # plt.plot(valiadationData, linewidth=0.7)
+
+        print(x)
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.legend(handles=legend)
+    # plt.legend(legend, loc='upper left')
+    # plt.show()
+    plt.savefig(directory + append + '_model_loss_epoch_img_training', format='eps', dpi=1000)
+    plt.gcf().clear()
+
+    legend = []
+    for x in data:
+        # legend.append(x)
+        trainingData = data[x].get('loss')
+        valiadationData = data[x].get('val_loss')
+        # tmp, = plt.plot(trainingData, linewidth=0.3, label=str(x) + '-training')
+        tmp2, = plt.plot(valiadationData, linewidth=0.3, label=str(x) + '-validation')
+        # legend.append(tmp)
         legend.append(tmp2)
         # plt.plot(valiadationData, linewidth=0.7)
 
@@ -144,8 +186,50 @@ def show_summary_of_model_all(results, data, append):
     plt.legend(handles=legend)
     # plt.legend(legend, loc='upper left')
     # plt.show()
-    plt.savefig(directory + append + '_model_loss_epoch_img', format='eps', dpi=1000)
+    plt.savefig(directory + append + '_model_loss_epoch_img_validation', format='eps', dpi=1000)
     plt.gcf().clear()
+
+
+    legend = []
+    for x in data:
+        # legend.append(x)
+        trainingData = data[x].get('top_k_categorical_accuracy')
+        valiadationData = data[x].get('val_top_k_categorical_accuracy')
+        tmp, = plt.plot(trainingData, linewidth=0.3, label=str(x) + '-training')
+        # tmp2, = plt.plot(valiadationData, linewidth=0.3, label=str(x) + '-validation')
+        legend.append(tmp)
+        # legend.append(tmp2)
+        # plt.plot(valiadationData, linewidth=0.7)
+
+        print(x)
+    plt.ylabel('top_5_categorical_accuracy')
+    plt.xlabel('epoch')
+    plt.legend(handles=legend)
+    # plt.legend(legend, loc='upper left')
+    # plt.show()
+    plt.savefig(directory + append + '_model_top5_accuracy_epoch_img_training', format='eps', dpi=1000)
+    plt.gcf().clear()
+
+    legend = []
+    for x in data:
+        # legend.append(x)
+        trainingData = data[x].get('top_k_categorical_accuracy')
+        valiadationData = data[x].get('val_top_k_categorical_accuracy')
+        # tmp, = plt.plot(trainingData, linewidth=0.3, label=str(x) + '-training')
+        tmp2, = plt.plot(valiadationData, linewidth=0.3, label=str(x) + '-validation')
+        # legend.append(tmp)
+        legend.append(tmp2)
+        # plt.plot(valiadationData, linewidth=0.7)
+
+        print(x)
+    plt.ylabel('top_5_categorical_accuracy')
+    plt.xlabel('epoch')
+    plt.legend(handles=legend)
+    # plt.legend(legend, loc='upper left')
+    # plt.show()
+    plt.savefig(directory + append + '_model_top5_accuracy_epoch_img_validation', format='eps', dpi=1000)
+    plt.gcf().clear()
+
 
     plt.gcf().clear()
 
@@ -408,7 +492,7 @@ def roc_plot(idx, mi_avg_fprs, mi_avg_tprs):
     # plt.show()
 
 
-def multiplyLayersTest(number_of_layers=10):
+def multiplyLayersTest(number_of_layers=3):
     if not check_numpy_set_exist("teach"):
         create_numpy_set(TRAINING_PATH, "teach")
     x_teach, y_teach = load_numpy_set("teach")
