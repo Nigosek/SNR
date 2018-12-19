@@ -30,6 +30,7 @@ import platform
 # Krzywa ROC
 from sklearn.metrics import roc_curve, auc, confusion_matrix
 
+
 # change
 # for Windows            "\\"
 # for Linux and MacOSX   "/"
@@ -42,7 +43,6 @@ else:
 
 TRAINING_PATH = "."+MY_SLASH+"fruits-360"+MY_SLASH+"Training"+MY_SLASH
 TEST_PATH = "."+MY_SLASH+"fruits-360"+MY_SLASH+"Test"+MY_SLASH
-
 
 #TRAINING_PATH = "./fruits/fruits-360/Training/"
 #TEST_PATH = "./fruits/fruits-360/Test/"
@@ -138,7 +138,7 @@ def show_summary_of_model_all(results, data, append):
     plt.legend(handles=legend)
     # plt.legend(legend, loc='upper left')
     # plt.show()
-    plt.savefig(directory + append + '_model_accuracy_epoch_img_training', format='eps', dpi=1000)
+    plt.savefig(directory + append + '_model_accuracy_epoch_img_training', format='pdf', dpi=1000)
     plt.gcf().clear()
 
     legend = []
@@ -158,7 +158,7 @@ def show_summary_of_model_all(results, data, append):
     plt.legend(handles=legend)
     # plt.legend(legend, loc='upper left')
     # plt.show()
-    plt.savefig(directory + append + '_model_accuracy_epoch_img_validation', format='eps', dpi=1000)
+    plt.savefig(directory + append + '_model_accuracy_epoch_img_validation', format='pdf', dpi=1000)
     plt.gcf().clear()
 
     legend = []
@@ -178,7 +178,7 @@ def show_summary_of_model_all(results, data, append):
     plt.legend(handles=legend)
     # plt.legend(legend, loc='upper left')
     # plt.show()
-    plt.savefig(directory + append + '_model_loss_epoch_img_training', format='eps', dpi=1000)
+    plt.savefig(directory + append + '_model_loss_epoch_img_training', format='pdf', dpi=1000)
     plt.gcf().clear()
 
     legend = []
@@ -198,7 +198,7 @@ def show_summary_of_model_all(results, data, append):
     plt.legend(handles=legend)
     # plt.legend(legend, loc='upper left')
     # plt.show()
-    plt.savefig(directory + append + '_model_loss_epoch_img_validation', format='eps', dpi=1000)
+    plt.savefig(directory + append + '_model_loss_epoch_img_validation', format='pdf', dpi=1000)
     plt.gcf().clear()
 
 
@@ -219,7 +219,7 @@ def show_summary_of_model_all(results, data, append):
     plt.legend(handles=legend)
     # plt.legend(legend, loc='upper left')
     # plt.show()
-    plt.savefig(directory + append + '_model_top5_accuracy_epoch_img_training', format='eps', dpi=1000)
+    plt.savefig(directory + append + '_model_top5_accuracy_epoch_img_training', format='pdf', dpi=1000)
     plt.gcf().clear()
 
     legend = []
@@ -239,7 +239,7 @@ def show_summary_of_model_all(results, data, append):
     plt.legend(handles=legend)
     # plt.legend(legend, loc='upper left')
     # plt.show()
-    plt.savefig(directory + append + '_model_top5_accuracy_epoch_img_validation', format='eps', dpi=1000)
+    plt.savefig(directory + append + '_model_top5_accuracy_epoch_img_validation', format='pdf', dpi=1000)
     plt.gcf().clear()
 
 
