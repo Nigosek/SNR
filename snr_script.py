@@ -26,14 +26,26 @@ from skimage import feature
 from sklearn.model_selection import train_test_split
 from keras import backend as K
 import tensorflow as tf
-
-
-
+import platform
 # Krzywa ROC
 from sklearn.metrics import roc_curve, auc, confusion_matrix
 
-TRAINING_PATH = "./fruits/fruits-360/Training/"
-TEST_PATH = "./fruits/fruits-360/Test/"
+# change
+# for Windows            "\\"
+# for Linux and MacOSX   "/"
+
+MY_OS=platform.system()
+if (MY_OS=="Windows"):
+    MY_SLASH="\\"
+else:
+    MY_SLASH="/"
+
+TRAINING_PATH = "."+MY_SLASH+"fruits-360"+MY_SLASH+"Training"+MY_SLASH
+TEST_PATH = "."+MY_SLASH+"fruits-360"+MY_SLASH+"Test"+MY_SLASH
+
+
+#TRAINING_PATH = "./fruits/fruits-360/Training/"
+#TEST_PATH = "./fruits/fruits-360/Test/"
 
 # change
 # for Windows            "\\"
