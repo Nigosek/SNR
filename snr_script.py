@@ -838,7 +838,7 @@ def LBPTest():
     global NUM_OF_INPUTS
     data_for_plots = {}
 
-    for i in range(4, 6, 2):
+    for i in range(4, 36, 2):
         NUM_OF_POINTS = i
         RADIUS = 8
         NUM_OF_INPUTS = NUM_OF_POINTS + 2
