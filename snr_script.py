@@ -42,10 +42,10 @@ NUM_OF_POINTS = 24
 RADIUS = 8
 NUM_OF_INPUTS = NUM_OF_POINTS + 2
 MULTIPLY_NUM_OF_NEURONS = 4
-NUM_OF_EPOCH = 50
-BATH_SIZE = 100
+NUM_OF_EPOCH = 400
+BATH_SIZE = 1000
 
-HIDDEN_LAYERS = 1
+HIDDEN_LAYERS = 4
 HIDDEN_LAYERS_WITHOUT_FIRST = HIDDEN_LAYERS - 1
 
 
@@ -115,9 +115,9 @@ def show_summary_of_model_all_test(results, data, append):
         # legend.append(x)
         trainingData = data[x].get('categorical_accuracy')
         valiadationData = data[x].get('val_categorical_accuracy')
-        tmp, = plt.plot(trainingData, linewidth=0.3, label=str(x) + '-training')
+        tmp, = plt.plot(trainingData, linewidth=0.3, label=str(x+1) + '-training')
         # tmp2, = plt.plot(valiadationData, linewidth=0.3, label=str(x) + '-validation')
-        tmp2, = plt.plot(valiadationData, linewidth=0.3, label=str(x) + '-test')
+        tmp2, = plt.plot(valiadationData, linewidth=0.3, label=str(x+1) + '-test')
         legend.append(tmp)
         legend.append(tmp2)
         # plt.plot(valiadationData, linewidth=0.7)
@@ -156,9 +156,9 @@ def show_summary_of_model_all_test(results, data, append):
         # legend.append(x)
         trainingData = data[x].get('loss')
         valiadationData = data[x].get('val_loss')
-        tmp, = plt.plot(trainingData, linewidth=0.3, label=str(x) + '-training')
+        tmp, = plt.plot(trainingData, linewidth=0.3, label=str(x+1) + '-training')
         # tmp2, = plt.plot(valiadationData, linewidth=0.3, label=str(x) + '-validation')
-        tmp2, = plt.plot(valiadationData, linewidth=0.3, label=str(x) + '-test')
+        tmp2, = plt.plot(valiadationData, linewidth=0.3, label=str(x+1) + '-test')
         legend.append(tmp)
         legend.append(tmp2)
         # plt.plot(valiadationData, linewidth=0.7)
@@ -197,9 +197,9 @@ def show_summary_of_model_all_test(results, data, append):
         # legend.append(x)
         trainingData = data[x].get('top_k_categorical_accuracy')
         valiadationData = data[x].get('val_top_k_categorical_accuracy')
-        tmp, = plt.plot(trainingData, linewidth=0.3, label=str(x) + '-training')
+        tmp, = plt.plot(trainingData, linewidth=0.3, label=str(x+1) + '-training')
         # tmp2, = plt.plot(valiadationData, linewidth=0.3, label=str(x) + '-validation')
-        tmp2, = plt.plot(valiadationData, linewidth=0.3, label=str(x) + '-test')
+        tmp2, = plt.plot(valiadationData, linewidth=0.3, label=str(x+1) + '-test')
         legend.append(tmp)
         legend.append(tmp2)
         # plt.plot(valiadationData, linewidth=0.7)
@@ -243,7 +243,7 @@ def show_summary_of_model_all(results, data, append):
         # legend.append(x)
         trainingData = data[x].get('categorical_accuracy')
         valiadationData = data[x].get('val_categorical_accuracy')
-        tmp, = plt.plot(trainingData, linewidth=0.3, label=str(x) + '-training')
+        tmp, = plt.plot(trainingData, linewidth=0.3, label=str(x+1) + '-training')
         # tmp2, = plt.plot(valiadationData, linewidth=0.3, label=str(x) + '-validation')
         legend.append(tmp)
         # legend.append(tmp2)
@@ -264,7 +264,7 @@ def show_summary_of_model_all(results, data, append):
         trainingData = data[x].get('categorical_accuracy')
         valiadationData = data[x].get('val_categorical_accuracy')
         # tmp, = plt.plot(trainingData, linewidth=0.3, label=str(x) + '-training')
-        tmp2, = plt.plot(valiadationData, linewidth=0.3, label=str(x) + '-validation')
+        tmp2, = plt.plot(valiadationData, linewidth=0.3, label=str(x+1) + '-validation')
         # legend.append(tmp)
         legend.append(tmp2)
         # plt.plot(valiadationData, linewidth=0.7)
@@ -283,7 +283,7 @@ def show_summary_of_model_all(results, data, append):
         # legend.append(x)
         trainingData = data[x].get('loss')
         valiadationData = data[x].get('val_loss')
-        tmp, = plt.plot(trainingData, linewidth=0.3, label=str(x) + '-training')
+        tmp, = plt.plot(trainingData, linewidth=0.3, label=str(x+1) + '-training')
         # tmp2, = plt.plot(valiadationData, linewidth=0.3, label=str(x) + '-validation')
         legend.append(tmp)
         # legend.append(tmp2)
@@ -304,7 +304,7 @@ def show_summary_of_model_all(results, data, append):
         trainingData = data[x].get('loss')
         valiadationData = data[x].get('val_loss')
         # tmp, = plt.plot(trainingData, linewidth=0.3, label=str(x) + '-training')
-        tmp2, = plt.plot(valiadationData, linewidth=0.3, label=str(x) + '-validation')
+        tmp2, = plt.plot(valiadationData, linewidth=0.3, label=str(x+1) + '-validation')
         # legend.append(tmp)
         legend.append(tmp2)
         # plt.plot(valiadationData, linewidth=0.7)
@@ -324,7 +324,7 @@ def show_summary_of_model_all(results, data, append):
         # legend.append(x)
         trainingData = data[x].get('top_k_categorical_accuracy')
         valiadationData = data[x].get('val_top_k_categorical_accuracy')
-        tmp, = plt.plot(trainingData, linewidth=0.3, label=str(x) + '-training')
+        tmp, = plt.plot(trainingData, linewidth=0.3, label=str(x+1) + '-training')
         # tmp2, = plt.plot(valiadationData, linewidth=0.3, label=str(x) + '-validation')
         legend.append(tmp)
         # legend.append(tmp2)
@@ -345,7 +345,7 @@ def show_summary_of_model_all(results, data, append):
         trainingData = data[x].get('top_k_categorical_accuracy')
         valiadationData = data[x].get('val_top_k_categorical_accuracy')
         # tmp, = plt.plot(trainingData, linewidth=0.3, label=str(x) + '-training')
-        tmp2, = plt.plot(valiadationData, linewidth=0.3, label=str(x) + '-validation')
+        tmp2, = plt.plot(valiadationData, linewidth=0.3, label=str(x+1) + '-validation')
         # legend.append(tmp)
         legend.append(tmp2)
         # plt.plot(valiadationData, linewidth=0.7)
@@ -763,8 +763,8 @@ def multiplyLayersTest(number_of_layers=3):
     # plt.figure(figsize=(10, 10))
     for i in range(0, number_of_iterations):
         results, model = multi_layer_perceptron_gesheft(number_of_class=num_of_class,
-                                                        x_teach=x_teach, y_teach=np.asarray(y_teach), x_val=x_val,
-                                                        y_val=np.asarray(y_val),
+                                                        x_teach=x_teach, y_teach=np.asarray(y_teach), x_val=x_test_temp,
+                                                        y_val=np.asarray(y_test),
                                                         num_of_epoch=NUM_OF_EPOCH,
                                                         batch_size=BATH_SIZE,
                                                         hidden_layers_without_first=i)
@@ -838,7 +838,7 @@ def LBPTest():
     global NUM_OF_INPUTS
     data_for_plots = {}
 
-    for i in range(4, 32, 2):
+    for i in range(4, 6, 2):
         NUM_OF_POINTS = i
         RADIUS = 8
         NUM_OF_INPUTS = NUM_OF_POINTS + 2
@@ -885,14 +885,14 @@ def LBPTest():
                                                         hidden_layers_without_first=HIDDEN_LAYERS_WITHOUT_FIRST)
         # plt.plot(results.history['categorical_accuracy'])
         # plt.plot(results.history['val_categorical_accuracy'])
-        data_for_plots[i] = results.history
+        data_for_plots[i-1] = results.history
     show_summary_of_model_all(results, data_for_plots, 'NUM_OF_POINTS')
     print("aaaa")
 
 
 def main():
     # main_processing_function()
-    multiplyLayersTest()
+    multiplyLayersTest(10)
     # LBPTest()
 
 
