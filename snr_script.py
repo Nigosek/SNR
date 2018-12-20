@@ -81,6 +81,7 @@ def multi_layer_perceptron_gesheft(number_of_class, x_teach, y_teach, x_val, y_v
     return results, model
 
 
+
 def show_summary_of_model(model, results):
     print("aaaaa")
     print(model.summary())
@@ -93,7 +94,7 @@ def show_summary_of_model(model, results):
     plt.ylabel('categorical_accuracy')
     plt.xlabel('epoch')
     plt.legend(['train', 'validation'], loc='upper left')
-    # plt.show()
+    plt.show()
     plt.gcf().clear()
     # summarize history for loss
     plt.plot(results.history['loss'])
@@ -102,9 +103,137 @@ def show_summary_of_model(model, results):
     plt.ylabel('loss')
     plt.xlabel('epoch')
     plt.legend(['train', 'validation'], loc='upper left')
-    # plt.show()
+    plt.show()
     plt.gcf().clear()
 
+
+def show_summary_of_model_all_test(results, data, append):
+    directory = "./images/"
+
+    legend = []
+    for x in data:
+        # legend.append(x)
+        trainingData = data[x].get('categorical_accuracy')
+        valiadationData = data[x].get('val_categorical_accuracy')
+        tmp, = plt.plot(trainingData, linewidth=0.3, label=str(x) + '-training')
+        # tmp2, = plt.plot(valiadationData, linewidth=0.3, label=str(x) + '-validation')
+        tmp2, = plt.plot(valiadationData, linewidth=0.3, label=str(x) + '-test')
+        legend.append(tmp)
+        legend.append(tmp2)
+        # plt.plot(valiadationData, linewidth=0.7)
+
+        print(x)
+    plt.ylabel('categorical_accuracy')
+    plt.xlabel('epoch')
+    plt.legend(handles=legend)
+    # plt.legend(legend, loc='upper left')
+    # plt.show()
+    plt.savefig(directory + append + '_model_accuracy_epoch_img_training222_test', format='eps', dpi=1000)
+    plt.gcf().clear()
+
+    # legend = []
+    # for x in data:
+    #     # legend.append(x)
+    #     trainingData = data[x].get('categorical_accuracy')
+    #     valiadationData = data[x].get('val_categorical_accuracy')
+    #     # tmp, = plt.plot(trainingData, linewidth=0.3, label=str(x) + '-training')
+    #     tmp2, = plt.plot(valiadationData, linewidth=0.3, label=str(x) + '-test')
+    #     # legend.append(tmp)
+    #     legend.append(tmp2)
+    #     # plt.plot(valiadationData, linewidth=0.7)
+    #
+    #     print(x)
+    # plt.ylabel('categorical_accuracy')
+    # plt.xlabel('epoch')
+    # plt.legend(handles=legend)
+    # # plt.legend(legend, loc='upper left')
+    # # plt.show()
+    # plt.savefig(directory + append + '_model_accuracy_epoch_img_test', format='eps', dpi=1000)
+    # plt.gcf().clear()
+
+    legend = []
+    for x in data:
+        # legend.append(x)
+        trainingData = data[x].get('loss')
+        valiadationData = data[x].get('val_loss')
+        tmp, = plt.plot(trainingData, linewidth=0.3, label=str(x) + '-training')
+        # tmp2, = plt.plot(valiadationData, linewidth=0.3, label=str(x) + '-validation')
+        tmp2, = plt.plot(valiadationData, linewidth=0.3, label=str(x) + '-test')
+        legend.append(tmp)
+        legend.append(tmp2)
+        # plt.plot(valiadationData, linewidth=0.7)
+
+        print(x)
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.legend(handles=legend)
+    # plt.legend(legend, loc='upper left')
+    # plt.show()
+    plt.savefig(directory + append + '_model_loss_epoch_img_training222_test', format='eps', dpi=1000)
+    plt.gcf().clear()
+
+    # legend = []
+    # for x in data:
+    #     # legend.append(x)
+    #     trainingData = data[x].get('loss')
+    #     valiadationData = data[x].get('val_loss')
+    #     # tmp, = plt.plot(trainingData, linewidth=0.3, label=str(x) + '-training')
+    #     tmp2, = plt.plot(valiadationData, linewidth=0.3, label=str(x) + '-test')
+    #     # legend.append(tmp)
+    #     legend.append(tmp2)
+    #     # plt.plot(valiadationData, linewidth=0.7)
+    #
+    #     print(x)
+    # plt.ylabel('loss')
+    # plt.xlabel('epoch')
+    # plt.legend(handles=legend)
+    # # plt.legend(legend, loc='upper left')
+    # # plt.show()
+    # plt.savefig(directory + append + '_model_loss_epoch_img_test', format='eps', dpi=1000)
+    # plt.gcf().clear()
+
+    legend = []
+    for x in data:
+        # legend.append(x)
+        trainingData = data[x].get('top_k_categorical_accuracy')
+        valiadationData = data[x].get('val_top_k_categorical_accuracy')
+        tmp, = plt.plot(trainingData, linewidth=0.3, label=str(x) + '-training')
+        # tmp2, = plt.plot(valiadationData, linewidth=0.3, label=str(x) + '-validation')
+        tmp2, = plt.plot(valiadationData, linewidth=0.3, label=str(x) + '-test')
+        legend.append(tmp)
+        legend.append(tmp2)
+        # plt.plot(valiadationData, linewidth=0.7)
+
+        print(x)
+    plt.ylabel('top_5_categorical_accuracy')
+    plt.xlabel('epoch')
+    plt.legend(handles=legend)
+    # plt.legend(legend, loc='upper left')
+    # plt.show()
+    plt.savefig(directory + append + '_model_top5_accuracy_epoch_img_training222_test', format='eps', dpi=1000)
+    plt.gcf().clear()
+
+    # legend = []
+    # for x in data:
+    #     # legend.append(x)
+    #     trainingData = data[x].get('top_k_categorical_accuracy')
+    #     valiadationData = data[x].get('val_top_k_categorical_accuracy')
+    #     # tmp, = plt.plot(trainingData, linewidth=0.3, label=str(x) + '-training')
+    #     tmp2, = plt.plot(valiadationData, linewidth=0.3, label=str(x) + '-test')
+    #     # legend.append(tmp)
+    #     legend.append(tmp2)
+    #     # plt.plot(valiadationData, linewidth=0.7)
+    #
+    #     print(x)
+    # plt.ylabel('top_5_categorical_accuracy')
+    # plt.xlabel('epoch')
+    # plt.legend(handles=legend)
+    # # plt.legend(legend, loc='upper left')
+    # # plt.show()
+    # plt.savefig(directory + append + '_model_top5_accuracy_epoch_img_test', format='eps', dpi=1000)
+    # plt.gcf().clear()
+
+    plt.gcf().clear()
 
 def show_summary_of_model_all(results, data, append):
     directory = "./images/"
@@ -460,6 +589,49 @@ def main_processing_function():
     plt.tight_layout(h_pad=1.0, w_pad=1.0)
     plt.show()
 
+    #*******************************************************************************
+    #test_data
+    y_test_tmp = cvt2_id_class_list(id_class_dictionary, y_test_temp)
+    y_test = cv2_id_class_as_vector(y_test_tmp, num_of_class)
+
+    results, model = multi_layer_perceptron_gesheft(number_of_class=num_of_class,
+                                                    x_teach=x_teach, y_teach=np.asarray(y_teach), x_val=x_test_temp,
+                                                    y_val=np.asarray(y_test),
+                                                    num_of_epoch=NUM_OF_EPOCH,
+                                                    batch_size=BATH_SIZE,
+                                                    hidden_layers_without_first=HIDDEN_LAYERS_WITHOUT_FIRST)
+    show_summary_of_model(model, results)
+
+    # evaluate_test
+    y_test_tmp = cvt2_id_class_list(id_class_dictionary, y_test_temp)
+    y_test = cv2_id_class_as_vector(y_test_tmp, num_of_class)
+    evaluate_test = model.evaluate(x_test_temp, np.asarray(y_test), verbose=0)
+    print("********************")
+    # Scalar test loss (if the model has a single output and no metrics) or list of scalars (if the model has multiple outputs and/or metrics).
+    # The attribute model.metrics_names will give you the display labels for the scalar outputs.
+    print(model.metrics_names)
+    print(evaluate_test)
+
+    # ROC
+    col = 'micro'
+    mi_avg_fprs = []
+    mi_avg_tprs = []
+    # mi_avg_aucs = []
+
+    y_test_array = np.asarray(y_test)
+
+    models = [model]
+    roc_plot_data(models, x_test_temp, y_test_array, num_of_class, mi_avg_fprs, mi_avg_tprs)
+    mi_avg_fprs = np.array(mi_avg_fprs)
+    mi_avg_tprs = np.array(mi_avg_tprs)
+
+    for idx in range(0, 4):
+        plt.subplot(4 / 2, 4 / 2, idx + 1)
+        roc_plot(0, mi_avg_fprs, mi_avg_tprs)
+    plt.tight_layout(h_pad=1.0, w_pad=1.0)
+    plt.show()
+
+
 
 def roc_plot_data(models, x_test_temp, y_test_array, num_of_class, mi_avg_fprs, mi_avg_tprs):
     for model in models:
@@ -582,6 +754,73 @@ def multiplyLayersTest(number_of_layers=3):
 
     show_summary_of_model_all(results, data_for_plots, 'NUM_OF_LAYERS')
 
+    #***************************************
+    #test set
+    y_test_tmp = cvt2_id_class_list(id_class_dictionary, y_test_temp)
+    y_test = cv2_id_class_as_vector(y_test_tmp, num_of_class)
+    data_for_plots = {}
+    models = []
+    # plt.figure(figsize=(10, 10))
+    for i in range(0, number_of_iterations):
+        results, model = multi_layer_perceptron_gesheft(number_of_class=num_of_class,
+                                                        x_teach=x_teach, y_teach=np.asarray(y_teach), x_val=x_val,
+                                                        y_val=np.asarray(y_val),
+                                                        num_of_epoch=NUM_OF_EPOCH,
+                                                        batch_size=BATH_SIZE,
+                                                        hidden_layers_without_first=i)
+        # plt.plot(results.history['categorical_accuracy'])
+        # plt.plot(results.history['val_categorical_accuracy'])
+        data_for_plots[i] = results.history
+        # show_summary_of_model_all(results, data_for_plots, '')
+
+        # # evaluate_test
+        # y_test_tmp = cvt2_id_class_list(id_class_dictionary, y_test_temp)
+        # y_test = cv2_id_class_as_vector(y_test_tmp, num_of_class)
+        # evaluate_test = model.evaluate(x_test_temp, np.asarray(y_test), verbose=0)
+        # print("********************")
+        # # Scalar test loss (if the model has a single output and no metrics) or list of scalars (if the model has multiple outputs and/or metrics).
+        # # The attribute model.metrics_names will give you the display labels for the scalar outputs.
+        # print(model.metrics_names)
+        # print(evaluate_test)
+
+        # # ROC
+        # col = 'micro'
+        # mi_avg_fprs = []
+        # mi_avg_tprs = []
+        # # mi_avg_aucs = []
+        #
+        # y_test_array = np.asarray(y_test)
+        #
+        # models.append(model)
+        # roc_plot_data(models, x_test_temp, y_test_array, num_of_class, mi_avg_fprs, mi_avg_tprs)
+        # mi_avg_fprs = np.array(mi_avg_fprs)
+        # mi_avg_tprs = np.array(mi_avg_tprs)
+
+    # # wykresy dla ROC, dla 6 wyk -> 2x3, dla 9 -> 3x3, więcej rand
+    # for idx in range(0, number_of_iterations):
+    #     # if(number_of_iterations%2)
+    #     if number_of_iterations % 2 == 0:
+    #         tmp = number_of_iterations / 2
+    #     else:
+    #         tmp = number_of_iterations / 2 + 1
+    #     if number_of_iterations == 1:
+    #         plt.subplot(1, 1, idx + 1)
+    #     elif number_of_iterations <= 6:
+    #         plt.subplot(2, tmp, idx + 1)
+    #     elif number_of_iterations <= 9:
+    #         plt.subplot(3, 3, idx + 1)
+    #     else:
+    #         plt.subplot(3, tmp, idx + 1)
+    #     # plt.subplot(idx + 1)
+    #
+    #     roc_plot(idx, mi_avg_fprs, mi_avg_tprs)
+    # plt.tight_layout(h_pad=1.0, w_pad=1.0)
+    # plt.show()
+    # plt.gcf().clear()
+
+    show_summary_of_model_all_test(results, data_for_plots, 'NUM_OF_LAYERS')
+
+
     print("aaaa")
 
 
@@ -659,3 +898,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
