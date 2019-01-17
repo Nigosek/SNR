@@ -10,6 +10,10 @@ from skimage import feature
 from sklearn.metrics import roc_curve, auc
 from sklearn.model_selection import train_test_split
 
+from keras.applications.vgg16 import VGG16
+# from keras.preprocessing.image import load_img
+from keras import layers
+
 TRAINING_PATH = "./fruits/fruits-360/Training/"
 TEST_PATH = "./fruits/fruits-360/Test/"
 
@@ -20,8 +24,8 @@ NUM_OF_POINTS = 24
 RADIUS = 8
 NUM_OF_INPUTS = NUM_OF_POINTS + 2
 MULTIPLY_NUM_OF_NEURONS = 4
-NUM_OF_EPOCH = 50
-BATH_SIZE = 1000
+NUM_OF_EPOCH = 1
+BATH_SIZE = 100
 
 HIDDEN_LAYERS = 4
 HIDDEN_LAYERS_WITHOUT_FIRST = HIDDEN_LAYERS - 1
@@ -262,9 +266,9 @@ def read_samples(path):
     subfolders = os.listdir(path)
 
     print("*************************")
-    print("read_samples:")
-    print("NUM_OF_POINTS=" + str(NUM_OF_POINTS))
-    print("RADIUS=" + str(RADIUS))
+    # print("read_samples:")
+    # print("NUM_OF_POINTS=" + str(NUM_OF_POINTS))
+    # print("RADIUS=" + str(RADIUS))
 
     # delete numbers from string
     # result = ''.join(i for i in s if not i.isdigit())
@@ -276,8 +280,9 @@ def read_samples(path):
         tmp_path2_img = path + "/" + folder
         images = os.listdir(tmp_path2_img)
         for image in images:
-            lbp = compute_lbp(tmp_path2_img, image)
-            x.append(lbp)
+            # lbp = compute_lbp(tmp_path2_img, image)
+            image = cv2.imread(tmp_path2_img + "/" + image, cv2.IMREAD_COLOR)
+            x.append(image)
             y.append(label)
     return x, y
 
@@ -300,9 +305,9 @@ def compute_lbp(image_path, image_name):
 
 
 def create_numpy_set(path, name):
-    histogram, labels = read_samples(path)
-    np.save("dataX-" + name + ".npy", histogram)
-    np.save("dataY-" + name + ".npy", labels)
+    dataX, dataY = read_samples(path)
+    np.save("dataX-" + name + ".npy", dataX)
+    np.save("dataY-" + name + ".npy", dataY)
 
 
 def check_numpy_set_exist(name):
@@ -661,10 +666,104 @@ def LBPTest():
     show_summary_of_model_all(results, data_for_plots, 'NUM_OF_POINTS')
 
 
+def conv():
+    if not check_numpy_set_exist("teach"):
+        create_numpy_set(TRAINING_PATH, "teach")
+    x_teach, y_teach = load_numpy_set("teach")
+    if not check_numpy_set_exist("test"):
+        create_numpy_set(TEST_PATH, "test")
+    x_test_temp, y_test_temp = load_numpy_set("test")
+    y_test_temp_copy = y_test_temp.copy()
+
+    # random Split Data set to teach
+    x_teach, x_val, y_teach_temp1, y_val_temp1 = train_test_split(x_teach, y_teach, test_size=0.3, random_state=42)
+
+    # number of class in set
+    num_of_class = len(set(y_test_temp_copy))
+
+    # make idClasses
+    id_class_dictionary = make_id_class_dictionary(y_test_temp_copy)
+
+    # convert from wordList to numberList Of class
+    y_teach_temp2 = cvt2_id_class_list(id_class_dictionary, y_teach_temp1)
+    y_val_temp2 = cvt2_id_class_list(id_class_dictionary, y_val_temp1)
+
+    # get final representation of labels as vector ex. [0 0 0 0 ..... 0 1 0 0 0] - outputs of network
+    y_val = cv2_id_class_as_vector(y_val_temp2, num_of_class)
+    y_teach = cv2_id_class_as_vector(y_teach_temp2, num_of_class)
+
+    vgg_conv = VGG16(weights='imagenet', include_top=False, input_shape=(100, 100, 3))
+
+    for layer in vgg_conv.layers[:-4]:
+        layer.trainable = False
+
+    # Tworzenie nowego modelu
+    model = Sequential()
+    model.add(vgg_conv)
+
+    # Dodawanie warstw
+    model.add(layers.Flatten())
+    model.add(layers.Dense(72, activation='softmax'))
+
+
+    # Schemat modelu
+    model.summary()
+
+    # NUM_OF_EPOCH = 50
+    # BATH_SIZE = 1000
+
+    # Konfiguracja sieci i danych
+    model.compile(loss='categorical_crossentropy',
+                  optimizer='adam',
+                  # optimizers.adam(lr=0.0001),
+                  metrics=['categorical_accuracy'])
+    results = model.fit(x_teach, np.asarray(y_teach), epochs=NUM_OF_EPOCH, batch_size=BATH_SIZE, validation_data=(x_val, np.asarray(y_val)),
+                        verbose=1)
+
+
+def read_samples_RGB(path):
+    # list of pictures
+    x = []
+    # list of labels
+    y = []
+
+    # read path of directory
+    dirpath = os.getcwd()
+    # read subfolders
+    subfolders = os.listdir(path)
+
+    print("*************************")
+    # print("read_samples:")
+    # print("NUM_OF_POINTS=" + str(NUM_OF_POINTS))
+    # print("RADIUS=" + str(RADIUS))
+
+    # delete numbers from string
+    # result = ''.join(i for i in s if not i.isdigit())
+    for folder in subfolders:
+        # delete numbers from string
+        # labels with variety types of fruit class /many types of apples/
+        label = ''.join(i for i in folder if not i.isdigit())
+        # get only first word /generalisation ex. only one label for apples - Apple /
+        tmp_path2_img = path + "/" + folder
+        images = os.listdir(tmp_path2_img)
+        for image in images:
+            # misc.imread(image)
+            image = cv2.imread(tmp_path2_img + "/" + image, cv2.IMREAD_COLOR)
+
+            # image = cv2.imread(image_path + "/" + image_name)
+            # gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+            # print(image)
+            # lbp = compute_lbp(tmp_path2_img, image)
+            x.append(image)
+            y.append(label)
+    return x, y
+
 def main():
     # main_processing_function()
     # multiplyLayersTest(10)
-    LBPTest()
+    # LBPTest()
+    # x, y = read_samples_RGB(TRAINING_PATH)
+    conv()
 
 
 if __name__ == "__main__":
